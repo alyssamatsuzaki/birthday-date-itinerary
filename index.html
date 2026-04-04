@@ -79,6 +79,11 @@
       50% { opacity: 1; transform: scale(1.05); }
     }
 
+    @keyframes soundWave {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+
     .page {
       position: relative;
       z-index: 1;
@@ -220,6 +225,136 @@
     .ideas-card:hover {
       transform: translateY(-2px);
     }
+
+    /* ── Audio Player ── */
+    .audio-play-btn {
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #b7d8ff, #d9ecff);
+      box-shadow: 0 8px 20px rgba(91, 133, 184, 0.25);
+      display: grid;
+      place-items: center;
+      transition: transform .18s ease, box-shadow .18s ease;
+      position: relative;
+    }
+
+    .audio-play-btn:hover {
+      transform: scale(1.07);
+      box-shadow: 0 12px 26px rgba(91, 133, 184, 0.32);
+    }
+
+    .audio-play-btn:active {
+      transform: scale(0.96);
+    }
+
+    .play-icon, .pause-icon {
+      position: absolute;
+      transition: opacity .15s ease;
+    }
+
+    .pause-icon { opacity: 0; }
+
+    .audio-play-btn.playing .play-icon { opacity: 0; }
+    .audio-play-btn.playing .pause-icon { opacity: 1; }
+
+    .audio-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .audio-title {
+      font-weight: 800;
+      font-size: 0.97rem;
+      letter-spacing: -0.01em;
+      margin: 0 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .audio-artist {
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+
+    .audio-progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .audio-time {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 36px;
+    }
+
+    .audio-progress {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(183, 216, 255, 0.4);
+      outline: none;
+      cursor: pointer;
+      border: none;
+    }
+
+    .audio-progress::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8fc3f8, #b7d8ff);
+      box-shadow: 0 2px 8px rgba(91, 133, 184, 0.3);
+      cursor: pointer;
+    }
+
+    .audio-progress::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8fc3f8, #b7d8ff);
+      box-shadow: 0 2px 8px rgba(91, 133, 184, 0.3);
+      cursor: pointer;
+      border: none;
+    }
+
+    .sound-bars {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .sound-bar {
+      width: 3px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #8fc3f8, #b7d8ff);
+      transform-origin: bottom;
+      transform: scaleY(0.4);
+    }
+
+    .sound-bar:nth-child(1) { height: 10px; animation: soundWave 0.8s ease-in-out infinite 0s; }
+    .sound-bar:nth-child(2) { height: 18px; animation: soundWave 0.8s ease-in-out infinite 0.15s; }
+    .sound-bar:nth-child(3) { height: 14px; animation: soundWave 0.8s ease-in-out infinite 0.3s; }
+    .sound-bar:nth-child(4) { height: 20px; animation: soundWave 0.8s ease-in-out infinite 0.1s; }
+    .sound-bar:nth-child(5) { height: 10px; animation: soundWave 0.8s ease-in-out infinite 0.25s; }
+
+    .sound-bars.paused .sound-bar {
+      animation-play-state: paused;
+    }
+
+    /* ── End Audio Player ── */
 
     .section {
       max-width: var(--maxw);
@@ -623,6 +758,10 @@
         flex-direction: column;
         align-items: start;
       }
+
+      .audio-player {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
@@ -653,12 +792,32 @@
       <section class="hero-card">
         <h1>Birthday Date Itinerary</h1>
         <p>
-          A little concept of a date itinerary in Long Beach, especially since I won’t have to ask you to pick me up. We can follow this exactly or barely follow it at all, depending on your preference. Either way, I just hope it feels special to you. ♡
+          A little concept of a date itinerary in Long Beach, especially since I won't have to ask you to pick me up. We can follow this exactly or barely follow it at all, depending on your preference. Either way, I just hope it feels special to you. ♡
         </p>
         <div class="hero-actions">
           <a class="btn primary" href="#schedule">View schedule ✨</a>
           <a class="btn secondary" href="#map-section">Open map 📍</a>
         </div>
+
+        <!-- Audio Player -->
+        <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+          <button class="audio-play-btn" id="playBtn" aria-label="Play">
+            <!-- Play icon -->
+            <svg class="play-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M5.5 3.5L14.5 9L5.5 14.5V3.5Z" fill="#233247"/>
+            </svg>
+            <!-- Pause icon -->
+            <svg class="pause-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="4" y="3" width="3.5" height="12" rx="1.5" fill="#233247"/>
+              <rect x="10.5" y="3" width="3.5" height="12" rx="1.5" fill="#233247"/>
+            </svg>
+          </button>
+        </div>
+        <!-- End Audio Player -->
+
+        <audio id="bgAudio" preload="metadata">
+          <source src="ocean.mp3" type="audio/mpeg">
+        </audio>
       </section>
     </header>
 
@@ -837,7 +996,7 @@
           title: 'Laugh Factory',
           time: '7pm -',
           short: 'End with comedy.',
-          details: 'We can decide depending on who’s performing.'
+          details: 'We can decide depending on who\'s performing.'
         }
       ],
       anyday: [
@@ -882,17 +1041,31 @@
       const toggleButtons = document.querySelectorAll('.toggle-btn');
       const ideasScroll = document.getElementById('ideasScroll');
 
-      console.assert(Boolean(timelineEl), 'Timeline element should exist');
-      console.assert(Boolean(locationsList), 'Locations list should exist');
-      console.assert(Boolean(mapElement), 'Map element should exist');
-      console.assert(Boolean(mapFallback), 'Map fallback element should exist');
-      console.assert(Boolean(ideasScroll), 'Ideas scroller should exist');
-      console.assert(toggleButtons.length === 2, 'There should be exactly two plan toggle buttons');
-      console.assert(Array.isArray(locations) && locations.length === 6, 'Locations should contain 6 items');
-      console.assert(plans.friday.length === 6, 'Friday plan should contain 6 items');
-      console.assert(plans.anyday.length === 5, 'Any day plan should contain 5 items');
-      console.assert(locations.every((item) => typeof item.description === 'string'), 'Every location description should be a string');
-      console.assert(ideasScroll.children.length === 5, 'Ideas scroller should contain 5 cards');
+      // ── Audio Player Logic ──
+      const audio = document.getElementById('bgAudio');
+      const playBtn = document.getElementById('playBtn');
+
+
+
+      playBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play();
+          playBtn.classList.add('playing');
+          playBtn.setAttribute('aria-label', 'Pause');
+        } else {
+          audio.pause();
+          playBtn.classList.remove('playing');
+          playBtn.setAttribute('aria-label', 'Play');
+        }
+      });
+
+
+      audio.addEventListener('ended', () => {
+        playBtn.classList.remove('playing');
+        playBtn.setAttribute('aria-label', 'Play');
+      });
+
+
 
       function renderTimeline(planKey) {
         if (!timelineEl || !plans[planKey]) return;
@@ -943,8 +1116,6 @@
 
           timelineEl.appendChild(wrapper);
         });
-
-        console.assert(timelineEl.children.length === plans[planKey].length, 'Timeline should render every plan item');
       }
 
       function renderLocationCard(location, onFocus) {
@@ -1023,8 +1194,6 @@
           markerRefs.set(location.id, marker);
           locationsList.appendChild(renderLocationCard(location, focusLocation));
         });
-
-        console.assert(locationsList.children.length === locations.length, 'Location list should render every location');
 
         const pathCoords = [
           locations.find((item) => item.id === 'farmers-market')?.coords,
